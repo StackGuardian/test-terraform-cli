@@ -1,0 +1,45 @@
+terraform {
+  cloud {
+    #hostname = "api.app.stackguardian.io"
+    hostname = "testapi.qa.stackguardian.io"
+    #hostname = "registry.local"
+
+    organization = "demo-org"
+
+    workspaces {
+      name = "wfgrps:test-terraform-cli:wfs:test-terraform-cli"
+    }
+  }
+}
+
+variable "resource_count" {
+  default = 1
+}
+
+variable "wait_time" {
+  default = 10
+}
+
+resource "null_resource" "hello_script" {
+  count = var.resource_count
+
+  triggers = {
+    timestamp = timestamp()
+  }
+
+  provisioner "local-exec" {
+    command = <<EOT
+      echo 'Hello, World!'
+      sleep ${var.wait_time}
+    EOT
+  }
+}
+
+output "message_lengths" {
+  value = [for i in range(var.resource_count) : length("Hello, World!")]
+}
+
+output "message_lengths_sensitive" {
+  sensitive = true
+  value     = [for i in range(var.resource_count) : length("Hello, World!")]
+}
